@@ -42,59 +42,53 @@ namespace Teste.Implementacao
         private static void MostrarFormatado(string[] lista)
         {
             var contador = 0;
-            foreach (var valor in lista)
+            foreach (var valorReal in lista)
             {
-                if (IsFixo(valor))
-                    lista[contador] = "RES: " + FormatarTelefoneFixo(valor);
-                else if (IsMovel(valor))
-                    lista[contador] = "MOB: " + FormatarTelefoneMovel(valor);
-                else if (IsSUP(valor))
-                    lista[contador] = "SUP: " + valor;
-                else if (IsNotGeografico(valor))
-                    lista[contador] = "NNG: " + FormatarTelefoneNaoGeografico(valor);
-                else if (IsPrestadoraServicos(valor))
-                    lista[contador] = FormatarTelefonePrestadoraServicos(valor);
+                var valorExtraido = RemoverCodigoPais(valorReal);
+                valorExtraido = RemoverCodigoArea(valorExtraido);
+                if (IsFixo(valorExtraido))
+                    lista[contador] = "RES: " + FormatarTelefoneFixo(valorReal);
+                else if (IsMovel(valorExtraido))
+                    lista[contador] = "MOB: " + FormatarTelefoneMovel(valorReal);
+                else if (IsSUP(valorExtraido))
+                    lista[contador] = "SUP: " + valorReal;
+                else if (IsNotGeografico(valorExtraido))
+                    lista[contador] = "NNG: " + FormatarTelefoneNaoGeografico(valorReal);
+                else if (IsPrestadoraServicos(valorExtraido))
+                    lista[contador] = FormatarTelefonePrestadoraServicos(valorReal);
                 else
-                    lista[contador] = $"Número de telefone não identificado: {valor}";
+                    lista[contador] = $"Número de telefone não identificado: {valorReal}";
 
+                Console.WriteLine(lista[contador]);
                 contador++;
-
             }
-            foreach (var list in lista)
-                Console.WriteLine(list);
 
             Console.ReadLine();
 
         }
 
+        private static string RemoverCodigoPais(string valor)
+        {
+            if (valor.Substring(0, 2) == "55")
+                return valor[2..];
 
+            return valor;
+        }
+        private static string RemoverCodigoArea(string valor)
+        {
+            if (valor.Substring(0, 2) == "47")
+                return valor[2..];
+            if (valor.Substring(0, 3) == "047")
+                return valor[3..];
+
+            return valor;
+        }
         private static bool IsFixo(string valor)
         {
             List<int> IniciaisTelefoneFixo = new List<int> { 2, 3, 4, 5 };
 
-            if (valor.Length < 8)
-                return false;
-
-            if (int.Parse(valor.Substring(0, 2)) == 55)
-                if (int.Parse(valor.Substring(2, 3)) == 047)
-                    if (IniciaisTelefoneFixo.Contains(int.Parse(valor.Substring(3, 1))))
-                        return true;
-
-            if (int.Parse(valor.Substring(0, 2)) == 55)
-                if (int.Parse(valor.Substring(2, 2)) == 47)
-                    if (IniciaisTelefoneFixo.Contains(int.Parse(valor.Substring(4, 1))))
-                        return true;
-
-            if (int.Parse(valor.Substring(0, 2)) == 47)
-                if (IniciaisTelefoneFixo.Contains(int.Parse(valor.Substring(2, 1))))
-                    return true;
-
-            if (int.Parse(valor.Substring(0, 3)) == 047)
-                if (IniciaisTelefoneFixo.Contains(int.Parse(valor.Substring(3, 1))))
-                    return true;
-            if (valor.Length == 8)
-                if (IniciaisTelefoneFixo.Contains(int.Parse(valor.Substring(0, 1))))
-                    return true;
+            if (valor.Length == 8 && IniciaisTelefoneFixo.Contains(int.Parse(valor.Substring(0, 1))))
+                return true;
 
             return false;
         }
@@ -102,30 +96,10 @@ namespace Teste.Implementacao
         {
             List<int> IniciaisTelefoneMovel = new List<int> { 7, 8, 9 };
 
-            if (valor.Length < 8)
-                return false;
-
-            List<int> IniciaisTelefoneFixo = new List<int> { 2, 3, 4, 5 };
-            if (int.Parse(valor.Substring(0, 2)) == 55)
-                if (int.Parse(valor.Substring(2, 3)) == 047)
-                    if (IniciaisTelefoneMovel.Contains(int.Parse(valor.Substring(3, 1))))
-                        return true;
-
-            if (int.Parse(valor.Substring(0, 2)) == 55)
-                if (int.Parse(valor.Substring(2, 2)) == 47)
-                    if (IniciaisTelefoneMovel.Contains(int.Parse(valor.Substring(4, 1))))
-                        return true;
-
-            if (int.Parse(valor.Substring(0, 2)) == 47)
-                if (IniciaisTelefoneMovel.Contains(int.Parse(valor.Substring(2, 1))))
-                    return true;
-
-            if (int.Parse(valor.Substring(0, 3)) == 047)
-                if (IniciaisTelefoneMovel.Contains(int.Parse(valor.Substring(3, 1))))
-                    return true;
-            if (valor.Length == 8 || valor.Length == 9)
-                if (IniciaisTelefoneMovel.Contains(int.Parse(valor.Substring(0, 1))))
-                    return true;
+            if (valor.Length >= 8 &&
+                valor.Length <= 9 &&
+                IniciaisTelefoneMovel.Contains(int.Parse(valor.Substring(0, 1))))
+                return true;
 
             return false;
         }
@@ -136,6 +110,7 @@ namespace Teste.Implementacao
 
             return false;
         }
+
         private static bool IsNotGeografico(string valor)
         {
             if (valor.Substring(0, 4) == "0800" || valor.Substring(0, 4) == "0500")
@@ -143,6 +118,7 @@ namespace Teste.Implementacao
 
             return false;
         }
+
         private static bool IsPrestadoraServicos(string valor)
         {
             List<int> prefixoPrestadoraServico = new List<int> { 103, 105, 106 };
@@ -188,12 +164,10 @@ namespace Teste.Implementacao
 
             return string.Empty;
         }
-        private static string FormatarTelefoneNaoGeografico(string valor)
-        {
+        private static string FormatarTelefoneNaoGeografico(string valor) =>
+            String.Format("{0:0### ### ####}", long.Parse(valor));
 
-            return String.Format("{0:#### ### ####}", long.Parse(valor));
 
-        }
         private static string FormatarTelefonePrestadoraServicos(string valor)
         {
             if (valor.Substring(0, 3) == "103")
@@ -206,9 +180,8 @@ namespace Teste.Implementacao
             return string.Empty;
         }
 
-
         private static string PegarTextoDeUmArquivo() =>
-             File.ReadAllText(@"Arquivos\input.4.in");
+         File.ReadAllText(@"Arquivos\input.4.in");
 
         private static string[] ConvertToList(string texto)
         {
